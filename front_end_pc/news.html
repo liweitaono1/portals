@@ -1,0 +1,172 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>新闻资讯 - DTcms网站管理系统</title>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+    <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery.flexslider-min.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript">
+        <!-- 开始轮播图动画 -->
+        $(function () {
+            $("#focus-box").flexslider({
+                directionNav: false,
+                pauseOnAction: false
+            });
+        });
+    </script>
+</head>
+
+<body id="news">
+
+<!--页面头部-->
+<div id="header"></div>
+<script>$("#header").load("_header.html");</script>
+<!--/页面头部-->
+
+<div id="app">
+
+    <!--当前位置-->
+    <div class="section">
+        <div class="location">
+            <span>当前位置：</span>
+            <a href="">首页</a> &gt;
+            <a href="">新闻资讯</a>
+        </div>
+    </div>
+    <!--/当前位置-->
+
+    <!--推荐资讯-->
+    <div class="section">
+        <div class="wrapper clearfix">
+            <div class="wrap-box">
+                <div class="left-455" style="margin:0;height:341px;">
+                    <div id="focus-box" class="focus-box">
+
+                        <!-- 轮播图 -->
+                        <ul class="slides" v-cloak>
+                            <li v-for="(news, index) in slide_news">
+                                <a href="">
+                                    <span class="note-bg"></span>
+                                    <span class="note-txt">{{ news.title }}</span>
+                                    <img :src="news.img_url"/>
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+
+                <!-- 每5条的第一条,字体高亮突出-->
+                <div class="left-455">
+                    <ul class="side-txt-list">
+
+                        <template v-for="(news, index) in top_news">
+                            <li class="tit" v-if="index%5==0">
+                                <a href="">{{ news.title }}</a>
+                            </li>
+                            <li v-else>
+                                <span>{{ news.create_time|formatDate }}</span><a href="">{{ news.title }}</a>
+                            </li>
+                        </template>
+
+                    </ul>
+                </div>
+
+
+                <div class="left-220">
+                    <ul class="side-img-list">
+
+                        <!-- 格式化显示图片新闻 -->
+                        <li v-for="(news, index) in image_news">
+                            <div class="img-box">
+                                <label>{{ index+1 }}</label>
+                                <img :src="news.img_url"/>
+                            </div>
+                            <div class="txt-box">
+                                <a href="">{{ news.title }}</a>
+                                <span>{{ news.create_time | formatDate }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--/推荐资讯-->
+
+    <!--分类推荐-->
+    <div class="section">
+
+        <template v-for="(category, index) in categories">
+            <!--子类-->
+            <div class="main-tit">
+                <h2>{{ category.title }}</h2>
+                <p>
+                    <a href="" v-for="subCategory in category.newscategory_set">{{ subCategory.title }}</a>
+                    <a href="">更多<i>+</i></a>
+                </p>
+            </div>
+            <!--/子类-->
+            <div class="wrapper clearfix">
+                <div class="wrap-box">
+                    <!--左边-->
+                    <div class="left-925">
+                        <div class="pad-15 bg-wrap">
+                            <ul class="rel-list">
+
+                                <li v-for="(news, index) in category.news">
+                                    <div class="img-box">
+                                        <a :title="news.title" href="">
+                                            <img :src="news.img_url">
+                                        </a>
+                                    </div>
+                                    <div class="info">
+                                        <h3><a :title="news.title"
+                                               href="">{{ news.title }}</a></h3>
+                                        <p>{{ news.zhaiyao }}</p>
+                                        <span>{{ news.create_time|formatDate2 }}</span>
+                                    </div>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!--右边-->
+                    <div class="left-220">
+                        <div class="pad-15 bg-wrap">
+                            <ul class="focus-list">
+
+                                <li v-for="(news, index) in category.top8">
+                                    <label class="hot" v-if="index==0">{{ index+1 }}</label>
+                                    <label v-else>{{ index+1 }}</label>
+                                    <a href="">{{ news.title }}</a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+    <!--/分类推荐-->
+</div>
+
+<!--页面底部-->
+<div id="footer"></div>
+<script>$("#footer").load("_footer.html");</script>
+<!--/页面底部-->
+
+<script type="text/javascript" src="js/vue-2.5.16.js"></script>
+<script type="text/javascript" src="js/axios-0.18.0.min.js"></script>
+<script src="js/news.js"></script>
+
+</body>
+</html>
