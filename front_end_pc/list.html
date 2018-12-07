@@ -48,8 +48,8 @@
 
                 <a @click="on_sort('create_time')" :class="ordering=='create_time'?'selected':''" >上架时间</a>
                 <a @click="on_sort('sales')" :class="ordering=='sales'?'selected':''" >按人气</a>
-                <a @click="on_sort('sell_price')" :class="ordering=='sell_price'?'selected':''" >价格从高到低</a>
-                <a @click="on_sort('-sell_price')" :class="ordering=='-sell_price'?'selected':''" >价格从低到高</a>
+                <a @click="on_sort('-sell_price')" :class="ordering=='-sell_price'?'selected':''" >价格从高到低</a>
+                <a @click="on_sort('sell_price')" :class="ordering=='sell_price'?'selected':''" >价格从低到高</a>
 
             </div>
 

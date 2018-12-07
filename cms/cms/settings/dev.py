@@ -208,8 +208,6 @@ LOGGING = {
 
 REST_FRAMEWORK = {
 
-    # 异常处理
-    'EXCEPTION_HANDLER': 'cms.utils.exceptions.exception_handler',
     # 认证方式
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',

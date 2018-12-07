@@ -11,7 +11,6 @@ from .serializers import AreasSerializer, AreasSubsSerializer
 
 class Area(ViewSet):
     def list(self, request):
-        print(request.COOKIES)
         province = Areas.objects.filter(parent=None)
         serializer = AreasSerializer(province, many=True)
         return Response(serializer.data)

@@ -4,101 +4,85 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework.filters import OrderingFilter
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
 
 from .models import Goods, GoodsCategory, GoodsAlbum
-from .serializers import GoodsSerializer, GoodsCategorySerializer, SubGoodsCategorySerializer, GoodsAlbumSerializer
+from .serializers import GoodsSerializer, GoodsCategorySerializer, GoodsAlbumSerializer, \
+    CategorySerializer
 
 
 # URL:/goods/recommend/
 class RecommendGoodsView(APIView):
     def get(self, request):
-        good = Goods.objects.filter(is_red=1).order_by('-create_time')[0:4]
-        serializer = GoodsSerializer(good, many=True)
+        good = Goods.objects.filter(is_red=1).order_by('-create_time')
+        serializer = GoodsSerializer(good[0:4], many=True)
         return Response(serializer.data)
 
 
 # URL:/goods/category/
 class GoodsCategoryView(APIView):
     def get(self, request):
-        goodcategory = GoodsCategory.objects.filter(parent_id=0)
-        serializer = SubGoodsCategorySerializer(goodcategory, many=True)
-        for x in serializer.data:
-            good = GoodsCategory.objects.filter(parent_id=x['id'])
+        categories = GoodsCategory.objects.filter(parent_id=0)
+        data = []
+        for category_1 in categories:
             goods = []
-            for y in good:
-                serializer1 = GoodsSerializer(y.goods_set.all(), many=True)
-                for z in serializer1.data:
-                    goods.append(z)
-            x['goods'] = goods
-        return Response(serializer.data)
+            goodscategory_set = []
+            categories2 = category_1.goodscategory_set.all()
+            for category_2 in categories2:
+                category2 = {
+                    'id': category_2.id,
+                    'title': category_2.title,
+                }
+                goodscategory_set.append(category2)
 
+                category_goods = Goods.objects.filter(category_id=category_2.id)
+                serializer = GoodsSerializer(category_goods, many=True)
+                goods.extend(serializer.data)
 
-# URL:/goods/?Category=category_id&ordering=-create_time
-class GoodsListView(APIView):
-    filter_backends = (OrderingFilter,)
-    order_fields = ('create_time', 'price', 'click')
-
-    def get(self, request):
-        category_id = request.query_params.get('category')
-        goods = Goods.objects.filter(category_id=category_id)
-        category = GoodsCategory.objects.filter(id=category_id)
-        category = GoodsCategorySerializer(category, many=True)
-        serializer = GoodsSerializer(goods, many=True)
-        data = serializer.data
-        goodsalbum_set = []
-        for x in goods:
-            goodsalbum = GoodsAlbum.objects.filter(goods_id=x.id)
-            serializer1 = GoodsAlbumSerializer(goodsalbum, many=True)
-            goodsalbum_set.append(serializer1.data)
-        for x in data:
-            x['category'] = category.data[0]
-            id = x['category_id']
-            parents = GoodsCategory.objects.filter(id=id)
-            parent = GoodsCategorySerializer(parents, many=True)
-            x['goodsalbum_set'] = goodsalbum_set[0]
-            x['category']['parent'] = parent.data[0]
+            category1 = {
+                "id": category_1.id,
+                "title": category_1.title,
+                "goodscategory_set": goodscategory_set,
+                "goods": goods
+            }
+            data.append(category1)
 
         return Response(data)
 
+# URL:/goods/?Category=category_id&ordering=-create_time
+class GoodsListView(ListAPIView):
+    """
+    商品列表页显示
+    """
+    serializer_class = GoodsSerializer
 
-# /category/43/
+    filter_backends = (OrderingFilter,)
+    ordering_fields = ('create_time', 'sell_price', 'sales')
+
+    def get_queryset(self):
+        Category_id = self.request.query_params.get('category')
+        goods = Goods.objects.filter(category_id=Category_id)
+        return goods
+
+    # /category/43/
+
+
 class Categorys(APIView):
     def get(self, request, pk):
-        category = GoodsCategory.objects.filter(id=pk)
-        serializer = GoodsCategorySerializer(category, many=True)
-        category = serializer.data
-        id = category[0]['parent']
-        parent = GoodsCategory.objects.filter(id=id)
-        serializer = GoodsCategorySerializer(parent, many=True)
-        category[0]['parent'] = serializer.data[0]
-        return Response(category[0])
+        category = GoodsCategory.objects.get(id=pk)
+        category = CategorySerializer(category).data
+        return Response(category)
 
 
 # URL: /goods/(?P<goods_id>\d+)/
 class GoodsDetail(APIView):
     def get(self, request, goods_id):
-        good = Goods.objects.filter(id=goods_id)
-        goodscategory = GoodsCategory.objects.filter(id=good[0].category_id)
-        serializer1 = GoodsCategorySerializer(goodscategory, many=True)
-
-        serializer = GoodsSerializer(good, many=True)
-        for x in serializer1.data:
-            category = GoodsCategory.objects.filter(id=x['id'])
-            serializer2 = GoodsCategorySerializer(category, many=True)
-            parent_category = GoodsCategory.objects.filter(id=serializer2.data[0]['parent'])
-            cndb = GoodsCategorySerializer(parent_category, many=True)
-            serializer2.data[0]['parent'] = cndb.data[0]
-        serializer.data[0]['category'] = serializer2.data[0]
-        goodsalbum_set = []
-        for x in good:
-            goodsalbum = GoodsAlbum.objects.filter(goods_id=x.id)
-            serializer1 = GoodsAlbumSerializer(goodsalbum, many=True)
-            goodsalbum_set.append(serializer1.data)
-        serializer.data[0]['goodsalbum_set'] = goodsalbum_set[0]
-        return Response(serializer.data[0])
+        good = Goods.objects.get(id=goods_id)
+        serializer = GoodsSerializer(good)
+        return Response(serializer.data)
 
 
 # URL: /goods/recommand/

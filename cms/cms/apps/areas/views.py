@@ -50,7 +50,6 @@ class Addresses(GenericViewSet):
 
     @action(methods=['put'], detail=True)
     def status(self, request, pk):
-        print(request.user)
         user = request.user
         address = Address.objects.get(pk=pk)
         user.default_address = address
